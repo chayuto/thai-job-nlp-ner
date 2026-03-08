@@ -42,12 +42,15 @@ class DatasetStats:
     avg_entities_per_post: float = 0.0
 
 
-def load_json(path: Path) -> list[dict]:
-    """Load a JSON file containing NER export data."""
+def load_file(path: Path) -> list[dict]:
+    """Load NER data from a .json or .jsonl file."""
     with open(path, encoding="utf-8") as f:
-        data = json.load(f)
-    if not isinstance(data, list):
-        raise ValueError(f"Expected a JSON array, got {type(data).__name__}")
+        if path.suffix == ".jsonl":
+            data = [json.loads(line) for line in f if line.strip()]
+        else:
+            data = json.load(f)
+            if not isinstance(data, list):
+                raise ValueError(f"Expected a JSON array, got {type(data).__name__}")
     return data
 
 
@@ -85,7 +88,7 @@ def validate_post(raw: dict) -> tuple[NERPost | None, list[str]]:
 
 def load_and_validate(path: Path) -> tuple[list[NERPost], DatasetStats]:
     """Load, validate, and compute stats for an NER export file."""
-    raw_data = load_json(path)
+    raw_data = load_file(path)
     posts: list[NERPost] = []
     stats = DatasetStats()
     text_lengths: list[int] = []
@@ -122,15 +125,12 @@ def load_and_validate(path: Path) -> tuple[list[NERPost], DatasetStats]:
 
 
 def merge_sources(*paths: Path) -> list[NERPost]:
-    """Load and merge multiple NER export files (production + synthetic)."""
+    """Load and merge multiple NER export files/directories."""
     all_posts: list[NERPost] = []
     seen_ids: set[str] = set()
 
-    for path in paths:
-        if not path.exists():
-            logger.warning(f"File not found, skipping: {path}")
-            continue
-
+    files = collect_data_files(list(paths))
+    for path in files:
         posts, stats = load_and_validate(path)
         for post in posts:
             if post.id in seen_ids:
@@ -164,19 +164,56 @@ def print_stats(stats: DatasetStats, source: str) -> None:
         print(f"  {label:<20} {count:>5}  ({pct:5.1f}%) {bar}")
 
 
+def collect_data_files(paths: list[Path]) -> list[Path]:
+    """Expand directories and globs into individual .json/.jsonl files."""
+    files: list[Path] = []
+    for p in paths:
+        if p.is_dir():
+            files.extend(sorted(p.glob("*.json")))
+            files.extend(sorted(p.glob("*.jsonl")))
+        elif p.exists():
+            files.append(p)
+        else:
+            logger.warning(f"Path not found: {p}")
+    return files
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(description="Load and validate NER export data")
-    parser.add_argument("--input", type=Path, required=True, help="Path to NER export JSON")
+    parser.add_argument(
+        "--input", type=Path, nargs="+", required=True,
+        help="Path(s) to .json/.jsonl files or a directory containing them",
+    )
     args = parser.parse_args()
 
-    if not args.input.exists():
-        logger.error(f"File not found: {args.input}")
+    files = collect_data_files(args.input)
+    if not files:
+        logger.error("No data files found")
         return
 
-    posts, stats = load_and_validate(args.input)
-    print_stats(stats, source=args.input.name)
+    all_posts: list[NERPost] = []
+    combined_stats = DatasetStats()
+
+    for f in files:
+        posts, stats = load_and_validate(f)
+        print_stats(stats, source=f.name)
+        all_posts.extend(posts)
+
+        combined_stats.total_posts += stats.total_posts
+        combined_stats.valid_posts += stats.valid_posts
+        combined_stats.skipped_posts += stats.skipped_posts
+        combined_stats.total_entities += stats.total_entities
+        combined_stats.matched_entities += stats.matched_entities
+        combined_stats.unmatched_entities += stats.unmatched_entities
+        combined_stats.label_counts += stats.label_counts
+
+    if len(files) > 1:
+        if all_posts:
+            combined_stats.avg_text_length = sum(len(p.raw_text) for p in all_posts) / len(all_posts)
+            combined_stats.avg_entities_per_post = combined_stats.total_entities / combined_stats.valid_posts
+        print_stats(combined_stats, source=f"COMBINED ({len(files)} files)")
 
 
 if __name__ == "__main__":
