@@ -22,7 +22,8 @@ labels:
 
 training:
   learning_rate: 2.0e-5
-  batch_size: 16
+  batch_size: 8
+  gradient_accumulation_steps: 2
   epochs: 10
   weight_decay: 0.01
   fp16: false
@@ -31,6 +32,8 @@ training:
   save_strategy: "epoch"
   metric_for_best_model: "f1"
   mps_high_watermark_ratio: "1.5"
+  report_to: "none"  # set to "wandb" to enable W&B logging
+  early_stopping_patience: 3
 
 data:
   raw_dir: "data/raw"

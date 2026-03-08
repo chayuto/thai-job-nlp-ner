@@ -25,7 +25,7 @@ from src.alignment.token_mapper import (
     get_tokenizer,
     verify_iob2_consistency,
 )
-from src.data.load_dataset import NERPost, load_and_validate, merge_sources, print_stats
+from src.data.load_dataset import NERPost, collect_data_files, load_and_validate, merge_sources, print_stats
 
 logger = logging.getLogger(__name__)
 
@@ -138,10 +138,9 @@ def run_pipeline(
     logger.info(f"Loaded {len(posts)} total posts")
 
     # Print stats for each source
-    for path in input_paths:
-        if path.exists():
-            _, stats = load_and_validate(path)
-            print_stats(stats, source=path.name)
+    for path in collect_data_files(input_paths):
+        _, stats = load_and_validate(path)
+        print_stats(stats, source=path.name)
 
     # Initialize tokenizer
     logger.info("Loading WangchanBERTa tokenizer...")

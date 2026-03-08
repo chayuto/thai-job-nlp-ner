@@ -61,13 +61,88 @@ Copy and paste the text below to your LLM of choice:
 
 ## How to use this workflow
 
-1. Create an empty file at `data/raw/synthetic.jsonl` if it doesn't exist.
+1. Create a file at `data/raw/synthetic_<YYYYMMDD>.jsonl` for each session.
 2. Paste the prompt above into an AI chat (ChatGPT, Claude, Gemini).
-3. Copy the output code block.
-4. Paste it directly at the bottom of `data/raw/synthetic.jsonl`.
-5. Repeat by telling the AI: **"Generate another batch of 20, focusing more on [LABEL_NAME] this time."**
-6. **Validating:** After adding a batch, run the permanent validation script to ensure every entity is an exact substring:
-   ```bash
-   python3 scripts/validate_synthetic.py --file data/raw/synthetic.jsonl
-   ```
-   This will check for errors and provide a breakdown of entities by label.
+3. Copy the output code block and **append** to your `.jsonl` file.
+4. Tell the AI: **"Generate another batch of 20"** — the LLM can only produce ~20 posts per output, so just keep appending.
+5. Rotate the focus directive (see table below) to keep data diverse.
+6. Repeat until you have enough. JSONL format means you just keep pasting — no structural edits needed.
+
+---
+
+## Batch Rotation Guide
+
+LLMs get repetitive within a long session. Rotate your re-prompt to ensure diverse entity coverage and post styles across batches.
+
+### Re-prompt template
+
+After the first batch, just say:
+
+```
+Generate another batch of 20. [FOCUS DIRECTIVE]
+```
+
+### Entity focus rotation
+
+| Batches | Focus directive |
+|---------|----------------|
+| 1-5 | *(base prompt as-is)* |
+| 6-10 | "Focus more on COMPENSATION and EMPLOYMENT_TERMS entities." |
+| 11-15 | "Focus more on DEMOGRAPHIC and LOCATION entities." |
+| 16-20 | "Focus more on CONTACT and PERSON entities." |
+| 21-25 | "Every post must have at least one HARD_SKILL with medical/nursing terms." |
+
+### Post style rotation
+
+| Batches | Focus directive |
+|---------|----------------|
+| 26-30 | "Make these job-seeker self-introductions ('หนูชื่อ...รับงาน...'), not employer posts." |
+| 31-35 | "Include medical/nursing/elderly care scenarios — hospitals, home care, rehab." |
+| 36-40 | "Include restaurant, construction, factory, and domestic worker jobs." |
+| 41-45 | "Make posts very short (1-2 lines) with heavy abbreviations and slang." |
+| 46-50 | "Make posts long and detailed (3-5 paragraphs) with multiple entity types per post." |
+| 51-55 | "Heavy Thai-English code-switching ('รับสมัคร caregiver ประสบการณ์ min 2 yrs')." |
+| 56-60 | "Line group repost style — forwarded job ads with 'ฝากประชาสัมพันธ์ค่ะ' headers." |
+
+### Quick copy-paste re-prompts
+
+```
+Generate another batch of 20. Focus more on COMPENSATION and EMPLOYMENT_TERMS entities.
+```
+
+```
+Generate another batch of 20. Make these job-seeker self-introductions, not employer posts.
+```
+
+```
+Generate another batch of 20. Make posts very short (1-2 lines) with heavy abbreviations and slang.
+```
+
+```
+Generate another batch of 20. Include medical/nursing/elderly care scenarios with heavy Thai-English code-switching.
+```
+
+---
+
+## Scaling Targets
+
+| Dataset size | Expected test F1 | Posts to generate |
+|-------------|------------------|-------------------|
+| ~500 (v0 baseline) | ~76% | Already have |
+| ~1,000 | ~82-85% | ~500 more (25 batches) |
+| ~2,000 | ~87-90% | ~1,500 more (75 batches) |
+| ~3,000+ | 90%+ | Combine with production data |
+
+---
+
+## After generating
+
+Once you have enough batches, reprocess and retrain:
+
+```bash
+# 1. Reprocess all raw data into IOB2 dataset
+python3 -m src.alignment.iob2_formatter --input data/raw/ --output data/processed
+
+# 2. Retrain
+python3 -m src.training.train_ner --dataset data/processed --output results
+```

@@ -1,10 +1,12 @@
 # thai-job-nlp-ner
 
-Fine-tuning [WangchanBERTa](https://huggingface.co/airesearch/wangchanberta-base-att-spm-uncased) for Named Entity Recognition on informal Thai job posts.
+Efficient Named Entity Recognition (NER) for informal Thai job postings. This project fine-tunes [WangchanBERTa](https://huggingface.co/airesearch/wangchanberta-base-att-spm-uncased) to extract structured HR data from unstructured social media text without the latency or cost of LLM APIs.
 
-## What This Does
+## Features
 
-Extracts structured HR data from unstructured Thai social media text — the kind of posts you'd find in Facebook job groups. Instead of calling an LLM API for every post, we fine-tune a small (110M param) local model that runs fast and costs nothing at inference.
+- **Domain-Specific Extraction:** Specialized in parsing informal Thai job posts (e.g., from Facebook groups).
+- **Efficient Inference:** Local execution using a 110M parameter model.
+- **Structured Output:** Maps raw text to key-value pairs (Location, Compensation, Skills, etc.).
 
 **Input:**
 ```
