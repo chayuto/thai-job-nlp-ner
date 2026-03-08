@@ -18,7 +18,7 @@ We need about 500 perfectly labeled Thai job posts.
 ---
 
 ## 2. Synthetic Data Augmentation (The Teacher Model)
-We don't have enough varied social media posts in the Happy Care Connect database yet. If we train our model on only 50 examples, it will **Overfit** (it will just memorize those 50 posts and fail when it sees a new one).
+We don't have enough varied social media posts in our database yet. If we train our model on only 50 examples, it will **Overfit** (it will just memorize those 50 posts and fail when it sees a new one).
 
 To get 400+ examples, we use **Data Augmentation**:
 1. We write a detailed prompt to **GPT-4o**.

@@ -1,6 +1,14 @@
 # Internal/proprietary docs - NEVER commit
 docs/internal/
 
+# Production data exports - NEVER commit
+data/raw/*
+!data/raw/.gitkeep
+
+# Processed datasets - too large for git
+data/processed/*
+!data/processed/.gitkeep
+
 # Python
 __pycache__/
 *.py[cod]

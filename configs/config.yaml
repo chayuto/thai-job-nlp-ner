@@ -1,0 +1,49 @@
+model:
+  checkpoint: "airesearch/wangchanberta-base-att-spm-uncased"
+  num_labels: 15  # O + 7 entities x 2 (B/I)
+  max_length: 512
+
+labels:
+  - "O"
+  - "B-HARD_SKILL"
+  - "I-HARD_SKILL"
+  - "B-PERSON"
+  - "I-PERSON"
+  - "B-LOCATION"
+  - "I-LOCATION"
+  - "B-COMPENSATION"
+  - "I-COMPENSATION"
+  - "B-EMPLOYMENT_TERMS"
+  - "I-EMPLOYMENT_TERMS"
+  - "B-CONTACT"
+  - "I-CONTACT"
+  - "B-DEMOGRAPHIC"
+  - "I-DEMOGRAPHIC"
+
+training:
+  learning_rate: 2.0e-5
+  batch_size: 16
+  epochs: 10
+  weight_decay: 0.01
+  fp16: false
+  bf16: false
+  eval_strategy: "epoch"
+  save_strategy: "epoch"
+  metric_for_best_model: "f1"
+  mps_high_watermark_ratio: "1.5"
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  test_size: 0.1
+  val_size: 0.1
+  seed: 42
+
+alignment:
+  fuzzy_threshold: 85.0
+  tcc_engine: "tcc"
+
+synthetic:
+  default_count: 400
+  openai_model: "gpt-4o"
+  output_file: "data/raw/synthetic.json"

@@ -54,8 +54,8 @@ Instead, we build a **Microservice**:
 1.  **FastAPI Server:** We wrap our model in a 50-line Python script using a framework called FastAPI. This script turns our model into a standard HTTP URL (e.g., `https://my-thai-nlp.onrender.com/extract`).
 2.  **Containerization (Docker):** We write a `Dockerfile` that packages Python, PyTorch, our FastAPI script, and our Model Weights into a single virtual box.
 3.  **Hosting:** We host that Docker box on a cheap cloud backend like Render, Railway, or Google Cloud Run for roughly $5/month.
-4.  **Supabase Triggers:** When a user types a job post on Happy Care Connect, Next.js saves it to Supabase. Supabase automatically sends an HTTP request behind the scenes to our `https://my-thai-nlp.../extract` URL.
-5.  **The Result:** The Python server runs the text through the model, translates the `<HARD_SKILL>` tag back into your proprietary database schema (e.g., `blood_draw`), and returns it to Supabase. 
+4.  **Database Triggers:** When a user submits a job post, the web app saves it to the database. A webhook automatically sends an HTTP request to our `https://my-thai-nlp.../extract` URL.
+5.  **The Result:** The Python server runs the text through the model, extracts the structured entities, and returns them to the database as clean JSON.
 
 The user on the frontend never sees this happening and never waits for a loading screen!
 
