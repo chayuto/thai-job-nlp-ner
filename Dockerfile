@@ -15,6 +15,8 @@ RUN pip install --no-cache-dir \
     transformers>=4.40.0 \
     accelerate>=1.1.0 \
     sentencepiece>=0.2.0 \
+    pythainlp>=5.0.0 \
+    rapidfuzz>=3.6.0 \
     fastapi>=0.110.0 \
     "uvicorn[standard]>=0.27.0" \
     pyyaml>=6.0
