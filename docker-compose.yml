@@ -1,0 +1,16 @@
+services:
+  ner-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - NER_MODEL_DIR=/app/model
+      - NER_DEVICE=cpu
+      - NER_MAX_LENGTH=512
+      - NER_MAX_TEXT_LENGTH=10000
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
