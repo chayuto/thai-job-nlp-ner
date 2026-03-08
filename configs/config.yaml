@@ -31,6 +31,8 @@ training:
   save_strategy: "epoch"
   metric_for_best_model: "f1"
   mps_high_watermark_ratio: "1.5"
+  report_to: "none"  # set to "wandb" to enable W&B logging
+  early_stopping_patience: 3
 
 data:
   raw_dir: "data/raw"
