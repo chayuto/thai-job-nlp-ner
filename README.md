@@ -2,7 +2,7 @@
 
 Efficient Named Entity Recognition (NER) for informal Thai job postings. Fine-tunes [WangchanBERTa](https://huggingface.co/airesearch/wangchanberta-base-att-spm-uncased) (110M params) to extract structured HR data from unstructured social media text — replacing expensive LLM API calls with fast local inference.
 
-**Test F1: 0.828** | **Inference: <100ms on MPS, <300ms on CPU** | **Trained in ~4 min on Apple Silicon**
+**Test F1: 0.897** | **Inference: <100ms on MPS, <300ms on CPU** | **Trained in ~4 min on Apple Silicon**
 
 ## Features
 
@@ -30,18 +30,18 @@ Efficient Named Entity Recognition (NER) for informal Thai job postings. Fine-tu
 
 ## Model Performance
 
-Trained on 758 Thai job posts (synthetic silver labels from GPT-4o, fuzzy-aligned to IOB2).
+Trained on 1,253 Thai job posts (synthetic silver labels from GPT-4o, fuzzy-aligned to IOB2) with class-weighted loss and label smoothing.
 
 | Entity | F1 | Precision | Recall |
 |--------|-----|-----------|--------|
-| CONTACT | 0.957 | 0.928 | 0.987 |
-| PERSON | 0.892 | 0.892 | 0.892 |
-| LOCATION | 0.861 | 0.816 | 0.912 |
-| EMPLOYMENT_TERMS | 0.850 | 0.915 | 0.793 |
-| COMPENSATION | 0.819 | 0.782 | 0.859 |
-| DEMOGRAPHIC | 0.776 | 0.760 | 0.792 |
-| HARD_SKILL | 0.761 | 0.697 | 0.838 |
-| **Overall** | **0.828** | **0.799** | **0.859** |
+| CONTACT | 0.962 | 0.942 | 0.983 |
+| LOCATION | 0.959 | 0.928 | 0.991 |
+| EMPLOYMENT_TERMS | 0.926 | 0.870 | 0.990 |
+| PERSON | 0.907 | 0.861 | 0.958 |
+| HARD_SKILL | 0.903 | 0.873 | 0.936 |
+| DEMOGRAPHIC | 0.875 | 0.827 | 0.928 |
+| COMPENSATION | 0.764 | 0.673 | 0.884 |
+| **Overall** | **0.897** | **0.850** | **0.949** |
 
 ## NER Entity Classes
 

@@ -40,7 +40,7 @@ def upload_model(
     url = api.upload_folder(
         folder_path=str(model_dir),
         repo_id=repo_id,
-        commit_message="Upload fine-tuned Thai Job NER model (v2, F1=0.828)",
+        commit_message="Upload fine-tuned Thai Job NER model (v3, F1=0.897)",
     )
 
     # Clean up copied README

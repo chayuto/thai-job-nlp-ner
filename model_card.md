@@ -26,10 +26,10 @@ model-index:
         metrics:
           - name: F1
             type: f1
-            value: 0.828
+            value: 0.897
           - name: Precision
             type: precision
-            value: 0.799
+            value: 0.850
           - name: Recall
             type: recall
             value: 0.859
@@ -70,9 +70,9 @@ for entity in results:
 ## Training
 
 - **Base model:** `airesearch/wangchanberta-base-att-spm-uncased` (CamemBERT architecture, 110M params)
-- **Training data:** 758 Thai job posts (synthetic silver labels from GPT-4o, fuzzy-aligned to IOB2)
+- **Training data:** 1,253 Thai job posts (synthetic silver labels from GPT-4o, fuzzy-aligned to IOB2)
 - **Hardware:** Apple Silicon MPS backend, FP32
-- **Hyperparameters:** LR=3e-5, warmup=0.1, batch=8, grad_accum=2, 15 epochs (early stopped at 11)
+- **Hyperparameters:** LR=3e-5, warmup=0.1, batch=8, grad_accum=2, 15 epochs, class-weighted loss, label smoothing=0.05
 - **Training time:** ~3 min 48 sec
 
 ### Data Pipeline
@@ -81,25 +81,25 @@ Raw Thai text + GPT-4o entity extractions → fuzzy alignment with rapidfuzz + p
 
 ## Evaluation
 
-### Overall (Test Set, 76 examples)
+### Overall (Test Set, 126 examples)
 
 | Metric | Score |
 |--------|-------|
-| **F1** | **0.828** |
-| Precision | 0.799 |
-| Recall | 0.859 |
+| **F1** | **0.897** |
+| Precision | 0.850 |
+| Recall | 0.949 |
 
 ### Per-Entity F1
 
 | Entity | F1 | Precision | Recall |
 |--------|-----|-----------|--------|
-| CONTACT | 0.957 | 0.928 | 0.987 |
-| PERSON | 0.892 | 0.892 | 0.892 |
-| LOCATION | 0.861 | 0.816 | 0.912 |
-| EMPLOYMENT_TERMS | 0.850 | 0.915 | 0.793 |
-| COMPENSATION | 0.819 | 0.782 | 0.859 |
-| DEMOGRAPHIC | 0.776 | 0.760 | 0.792 |
-| HARD_SKILL | 0.761 | 0.697 | 0.838 |
+| CONTACT | 0.962 | 0.942 | 0.983 |
+| LOCATION | 0.959 | 0.928 | 0.991 |
+| EMPLOYMENT_TERMS | 0.926 | 0.870 | 0.990 |
+| PERSON | 0.907 | 0.861 | 0.958 |
+| HARD_SKILL | 0.903 | 0.873 | 0.936 |
+| DEMOGRAPHIC | 0.875 | 0.827 | 0.928 |
+| COMPENSATION | 0.764 | 0.673 | 0.884 |
 
 ## Limitations
 
