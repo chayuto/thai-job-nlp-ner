@@ -1,0 +1,39 @@
+# Internal/proprietary docs - NEVER commit
+docs/internal/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+venv/
+.venv/
+
+# Environment & secrets
+.env
+.env.local
+credentials.json
+
+# Model artifacts (too large for git)
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+results/
+checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Weights & Biases
+wandb/
