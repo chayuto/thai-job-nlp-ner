@@ -1,6 +1,9 @@
 # Internal/proprietary docs - NEVER commit
 docs/internal/
 
+# Training logs - experimental notes, not for public repo
+docs/training_logs/
+
 # Production data exports - NEVER commit
 data/raw/*
 !data/raw/.gitkeep

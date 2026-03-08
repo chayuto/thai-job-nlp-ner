@@ -90,6 +90,7 @@ def train(
         learning_rate=train_cfg["learning_rate"],
         per_device_train_batch_size=train_cfg["batch_size"],
         per_device_eval_batch_size=train_cfg["batch_size"],
+        gradient_accumulation_steps=train_cfg.get("gradient_accumulation_steps", 1),
         num_train_epochs=train_cfg["epochs"],
         weight_decay=train_cfg["weight_decay"],
         fp16=False,
@@ -101,10 +102,14 @@ def train(
         greater_is_better=True,
         logging_steps=10,
         report_to=train_cfg.get("report_to", "none"),
-        use_mps_device=(device.type == "mps"),
         save_total_limit=3,
         remove_unused_columns=False,
     )
+
+    callbacks = []
+    patience = train_cfg.get("early_stopping_patience")
+    if patience:
+        callbacks.append(EarlyStoppingCallback(early_stopping_patience=patience))
 
     trainer = Trainer(
         model=model,
@@ -113,6 +118,7 @@ def train(
         eval_dataset=dataset["validation"],
         data_collator=data_collator,
         compute_metrics=compute_metrics,
+        callbacks=callbacks,
     )
 
     # Train
