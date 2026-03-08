@@ -21,10 +21,11 @@ labels:
   - "I-DEMOGRAPHIC"
 
 training:
-  learning_rate: 2.0e-5
+  learning_rate: 3.0e-5
   batch_size: 8
   gradient_accumulation_steps: 2
-  epochs: 10
+  epochs: 15
+  warmup_ratio: 0.1
   weight_decay: 0.01
   fp16: false
   bf16: false

@@ -34,6 +34,7 @@ credentials.json
 *.pth
 *.onnx
 results/
+results_v*/
 checkpoints/
 
 # IDE
