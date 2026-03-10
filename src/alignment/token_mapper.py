@@ -18,9 +18,6 @@ from src.alignment.fuzzy_matcher import AlignmentResult
 # Label index used by PyTorch CrossEntropyLoss to ignore special tokens
 IGNORE_INDEX = -100
 
-DEFAULT_CHECKPOINT = "airesearch/wangchanberta-base-att-spm-uncased"
-
-
 @dataclass
 class TokenizedPost:
     input_ids: list[int]
@@ -30,8 +27,8 @@ class TokenizedPost:
     offset_mapping: list[tuple[int, int]]
 
 
-def get_tokenizer(checkpoint: str = DEFAULT_CHECKPOINT) -> PreTrainedTokenizerBase:
-    """Load the WangchanBERTa tokenizer."""
+def get_tokenizer(checkpoint: str) -> PreTrainedTokenizerBase:
+    """Load a HuggingFace tokenizer by checkpoint name."""
     return AutoTokenizer.from_pretrained(checkpoint)
 
 

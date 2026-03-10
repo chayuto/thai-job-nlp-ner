@@ -1,16 +1,17 @@
 # thai-job-nlp-ner
 
-Efficient Named Entity Recognition (NER) for informal Thai job postings. Fine-tunes [WangchanBERTa](https://huggingface.co/airesearch/wangchanberta-base-att-spm-uncased) (110M params) to extract structured HR data from unstructured social media text — replacing expensive LLM API calls with fast local inference.
+Efficient Named Entity Recognition (NER) for informal Thai job postings. Fine-tunes pretrained Thai language models to extract structured HR data from unstructured social media text — replacing expensive LLM API calls with fast local inference.
 
-**Test F1: 0.897** | **Inference: <100ms on MPS, <300ms on CPU** | **Trained in ~4 min on Apple Silicon**
+**Best F1: 0.956 (PhayaThaiBERT)** | **Inference: <100ms on MPS, <300ms on CPU** | **Trained in ~10 min on Apple Silicon**
 
-[Model on HuggingFace](https://huggingface.co/chayuto/thai-job-ner-wangchanberta) | [Dataset on HuggingFace](https://huggingface.co/datasets/chayuto/thai-job-ner-dataset)
+[PhayaThaiBERT Model](https://huggingface.co/chayuto/thai-job-ner-phayathaibert) | [WangchanBERTa Model](https://huggingface.co/chayuto/thai-job-ner-wangchanberta) | [Dataset](https://huggingface.co/datasets/chayuto/thai-job-ner-dataset)
 
 ## Features
 
 - **Domain-Specific Extraction:** Parses informal Thai job posts from Facebook groups, Line chats, and social media
 - **7 Entity Types:** Skills, locations, salaries, contacts, employment terms, demographics, person names
-- **Fast Inference:** 110M parameter model — runs locally on CPU or Apple Silicon MPS
+- **Multi-Model:** PhayaThaiBERT (F1=0.956) and WangchanBERTa (F1=0.897) — config-driven model swapping
+- **Fast Inference:** ~110-122M parameter models — runs locally on CPU or Apple Silicon MPS
 - **Production Ready:** FastAPI microservice with Docker, or interactive Gradio demo
 
 **Input:**
@@ -32,18 +33,28 @@ Efficient Named Entity Recognition (NER) for informal Thai job postings. Fine-tu
 
 ## Model Performance
 
-Trained on 1,253 Thai job posts (synthetic silver labels from GPT-4o, fuzzy-aligned to IOB2) with class-weighted loss and label smoothing.
+Trained on 1,253 Thai job posts (synthetic silver labels from GPT-4o, fuzzy-aligned to IOB2). Two model variants available:
+
+### Model Comparison
+
+| Metric | WangchanBERTa | PhayaThaiBERT | Delta |
+|--------|---------------|---------------|-------|
+| **Overall F1** | 0.897 | **0.956** | **+0.059** |
+| Overall Precision | 0.850 | 0.939 | +0.089 |
+| Overall Recall | 0.949 | 0.974 | +0.025 |
+
+### Per-Entity F1 (PhayaThaiBERT — best model)
 
 | Entity | F1 | Precision | Recall |
 |--------|-----|-----------|--------|
-| CONTACT | 0.962 | 0.942 | 0.983 |
-| LOCATION | 0.959 | 0.928 | 0.991 |
-| EMPLOYMENT_TERMS | 0.926 | 0.870 | 0.990 |
-| PERSON | 0.907 | 0.861 | 0.958 |
-| HARD_SKILL | 0.903 | 0.873 | 0.936 |
-| DEMOGRAPHIC | 0.875 | 0.827 | 0.928 |
-| COMPENSATION | 0.764 | 0.673 | 0.884 |
-| **Overall** | **0.897** | **0.850** | **0.949** |
+| CONTACT | 0.987 | 0.983 | 0.991 |
+| PERSON | 0.979 | 0.972 | 0.986 |
+| LOCATION | 0.966 | 0.950 | 0.983 |
+| EMPLOYMENT_TERMS | 0.966 | 0.943 | 0.990 |
+| COMPENSATION | 0.965 | 0.956 | 0.973 |
+| HARD_SKILL | 0.946 | 0.919 | 0.974 |
+| DEMOGRAPHIC | 0.915 | 0.897 | 0.935 |
+| **Overall** | **0.956** | **0.939** | **0.974** |
 
 ## NER Entity Classes
 
@@ -119,8 +130,9 @@ Phase 1: Data Engineering
   → IOB2-formatted HuggingFace Dataset
 
 Phase 2: Training
-  WangchanBERTa fine-tuning on Apple Silicon (MPS backend, FP32)
-  LR=3e-5, warmup=0.1, batch=8, grad_accum=2, 15 epochs
+  Config-driven model fine-tuning on Apple Silicon (MPS backend, FP32)
+  Supports WangchanBERTa and PhayaThaiBERT via YAML config swap
+  LR=3e-5, warmup=0.1, 15 epochs, gradient checkpointing for large-vocab models
 
 Phase 3: Evaluation
   Strict exact-match F1 via seqeval + per-entity breakdown
@@ -131,16 +143,20 @@ Phase 4: Deployment
 
 ## Key Technical Decisions
 
+- **PhayaThaiBERT > WangchanBERTa** — XLM-R-derived vocab (248K) handles Thai-English code-switching better; +0.059 F1
+- **Frozen embeddings for large-vocab models** — PhayaThaiBERT's 248K embedding matrix causes MPS OOM; freezing saves ~750MB with no quality loss
 - **PyTorch MPS over MLX** — HuggingFace Trainer integration, mature BERT training kernels
 - **FP32 only** — MPS fp16 causes gradient underflow / NaN loss
 - **rapidfuzz + pythainlp** — Fast fuzzy matching with Thai Character Cluster boundary safety
-- **offset_mapping** — Bypasses WangchanBERTa's `<_>` space token misalignment in `char_to_token()`
+- **offset_mapping** — Tokenizer-agnostic subword-to-character alignment (works with any HF tokenizer)
 - **LR=3e-5 with warmup** — 2e-5 undertrained; higher LR with warmup=0.1 gave +4.3pp F1
 
 ## Project Structure
 
 ```
-├── configs/config.yaml            # Hyperparameters & pipeline settings
+├── configs/
+│   ├── config.yaml                # WangchanBERTa training config
+│   └── config_phayathaibert.yaml  # PhayaThaiBERT training config
 ├── src/
 │   ├── data/
 │   │   ├── load_dataset.py        # Load & validate NER export JSON
@@ -160,11 +176,13 @@ Phase 4: Deployment
 ├── app_demo.py                    # Gradio interactive demo
 ├── Dockerfile                     # CPU deployment container
 ├── docker-compose.yml             # Local dev with health check
-├── model_card.md                  # HuggingFace Hub model card
+├── model_card.md                  # HuggingFace model card (WangchanBERTa)
+├── model_card_phayathaibert.md    # HuggingFace model card (PhayaThaiBERT)
 ├── scripts/
 │   ├── test_api.py                # API integration test
 │   ├── upload_to_hub.py           # Push model to HuggingFace
-│   └── build_hf_dataset.py       # Build & publish dataset to HuggingFace
+│   ├── build_hf_dataset.py       # Build & publish dataset to HuggingFace
+│   └── compare_models.py         # Side-by-side model comparison
 ├── notebooks/
 │   └── 01_data_inspection.ipynb   # Visual alignment verification
 ├── docs/
@@ -178,7 +196,7 @@ Phase 4: Deployment
 
 ## Tech Stack
 
-- **Model:** `airesearch/wangchanberta-base-att-spm-uncased` (110M params)
+- **Models:** `clicknext/phayathaibert` (best, ~122M) / `airesearch/wangchanberta-base-att-spm-uncased` (110M)
 - **Framework:** PyTorch + HuggingFace Transformers
 - **Hardware:** Apple Silicon (MPS backend) / CPU
 - **Thai NLP:** pythainlp (TCC tokenization), rapidfuzz (fuzzy alignment)
