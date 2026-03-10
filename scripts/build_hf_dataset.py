@@ -350,7 +350,11 @@ def main() -> None:
     )
     parser.add_argument(
         "--input", type=Path, nargs="+",
-        default=[Path("data/raw/synthetic_0.json"), Path("data/raw/synthetic_template.json")],
+        default=[
+            Path("data/raw/synthetic_0.json"),
+            Path("data/raw/synthetic_template.json"),
+            Path("data/raw/synthetic.jsonl"),
+        ],
         help="Path(s) to synthetic NER JSON file(s)",
     )
     parser.add_argument(

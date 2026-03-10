@@ -7,6 +7,18 @@ docs/training_logs/
 # Production data exports - NEVER commit
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/synthetic_*.json
+!data/raw/synthetic*.jsonl
+
+# Real-world / proprietary data — NEVER commit under any name or path
+**/ner_export*.json
+**/production_*.json
+**/real_data*
+**/export_*.json
+
+# prod-secret folders — proprietary data, NEVER commit
+**/prod-secret/*
+!**/prod-secret/.gitkeep
 
 # Processed datasets - too large for git
 data/processed/*
