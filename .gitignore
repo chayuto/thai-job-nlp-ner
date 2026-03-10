@@ -12,6 +12,9 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 
+# HuggingFace dataset build output
+data/hf_dataset/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -4,6 +4,8 @@ Efficient Named Entity Recognition (NER) for informal Thai job postings. Fine-tu
 
 **Test F1: 0.897** | **Inference: <100ms on MPS, <300ms on CPU** | **Trained in ~4 min on Apple Silicon**
 
+[Model on HuggingFace](https://huggingface.co/chayuto/thai-job-ner-wangchanberta) | [Dataset on HuggingFace](https://huggingface.co/datasets/chayuto/thai-job-ner-dataset)
+
 ## Features
 
 - **Domain-Specific Extraction:** Parses informal Thai job posts from Facebook groups, Line chats, and social media
@@ -161,7 +163,8 @@ Phase 4: Deployment
 ├── model_card.md                  # HuggingFace Hub model card
 ├── scripts/
 │   ├── test_api.py                # API integration test
-│   └── upload_to_hub.py           # Push model to HuggingFace
+│   ├── upload_to_hub.py           # Push model to HuggingFace
+│   └── build_hf_dataset.py       # Build & publish dataset to HuggingFace
 ├── notebooks/
 │   └── 01_data_inspection.ipynb   # Visual alignment verification
 ├── docs/

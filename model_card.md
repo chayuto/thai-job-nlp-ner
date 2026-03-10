@@ -11,7 +11,7 @@ tags:
   - job-posting
   - apple-silicon
 datasets:
-  - custom
+  - chayuto/thai-job-ner-dataset
 metrics:
   - f1
   - precision
@@ -70,7 +70,7 @@ for entity in results:
 ## Training
 
 - **Base model:** `airesearch/wangchanberta-base-att-spm-uncased` (CamemBERT architecture, 110M params)
-- **Training data:** 1,253 Thai job posts (synthetic silver labels from GPT-4o, fuzzy-aligned to IOB2)
+- **Training data:** 1,253 Thai job posts (synthetic silver labels from GPT-4o, fuzzy-aligned to IOB2) — [Dataset on HuggingFace](https://huggingface.co/datasets/chayuto/thai-job-ner-dataset)
 - **Hardware:** Apple Silicon MPS backend, FP32
 - **Hyperparameters:** LR=3e-5, warmup=0.1, batch=8, grad_accum=2, 15 epochs, class-weighted loss, label smoothing=0.05
 - **Training time:** ~3 min 48 sec
@@ -100,6 +100,12 @@ Raw Thai text + GPT-4o entity extractions → fuzzy alignment with rapidfuzz + p
 | HARD_SKILL | 0.903 | 0.873 | 0.936 |
 | DEMOGRAPHIC | 0.875 | 0.827 | 0.928 |
 | COMPENSATION | 0.764 | 0.673 | 0.884 |
+
+## Links
+
+- **Model:** [chayuto/thai-job-ner-wangchanberta](https://huggingface.co/chayuto/thai-job-ner-wangchanberta)
+- **Dataset:** [chayuto/thai-job-ner-dataset](https://huggingface.co/datasets/chayuto/thai-job-ner-dataset)
+- **Source Code:** [github.com/chayuto/thai-job-nlp-ner](https://github.com/chayuto/thai-job-nlp-ner)
 
 ## Limitations
 
