@@ -124,6 +124,7 @@ def split_dataset(
 def run_pipeline(
     input_paths: list[Path],
     output_dir: Path,
+    checkpoint: str = "airesearch/wangchanberta-base-att-spm-uncased",
     threshold: float = 85.0,
     max_length: int = 512,
     test_size: float = 0.1,
@@ -143,8 +144,8 @@ def run_pipeline(
         print_stats(stats, source=path.name)
 
     # Initialize tokenizer
-    logger.info("Loading WangchanBERTa tokenizer...")
-    tokenizer = get_tokenizer()
+    logger.info(f"Loading tokenizer: {checkpoint}")
+    tokenizer = get_tokenizer(checkpoint)
 
     # Process all posts
     logger.info("Running alignment pipeline...")

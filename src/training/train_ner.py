@@ -1,4 +1,4 @@
-"""Fine-tune WangchanBERTa for Thai NER on Apple Silicon (MPS)."""
+"""Fine-tune a transformer model for Thai NER on Apple Silicon (MPS)."""
 
 from __future__ import annotations
 
@@ -66,7 +66,11 @@ def train(
 
     # Load tokenizer and model
     checkpoint = model_cfg["checkpoint"]
+    model_name = checkpoint.split("/")[-1]
+    output_dir = output_dir / model_name
+    output_dir.mkdir(parents=True, exist_ok=True)
     logger.info(f"Loading model: {checkpoint}")
+    logger.info(f"Output directory: {output_dir}")
 
     tokenizer = AutoTokenizer.from_pretrained(checkpoint)
     model = AutoModelForTokenClassification.from_pretrained(
@@ -75,6 +79,12 @@ def train(
         id2label={i: l for i, l in enumerate(DEFAULT_LABELS)},
         label2id={l: i for i, l in enumerate(DEFAULT_LABELS)},
     )
+    # Freeze embeddings for large-vocab models to reduce memory
+    if train_cfg.get("freeze_embeddings", False):
+        for param in model.base_model.embeddings.parameters():
+            param.requires_grad = False
+        logger.info("Froze embedding layer to reduce memory usage")
+
     model.to(device)
 
     # Dynamic padding collator
@@ -104,6 +114,7 @@ def train(
         report_to=train_cfg.get("report_to", "none"),
         save_total_limit=3,
         remove_unused_columns=False,
+        gradient_checkpointing=train_cfg.get("gradient_checkpointing", False),
     )
 
     callbacks = []
@@ -151,7 +162,7 @@ def train(
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-    parser = argparse.ArgumentParser(description="Fine-tune WangchanBERTa for Thai NER")
+    parser = argparse.ArgumentParser(description="Fine-tune a transformer model for Thai NER")
     parser.add_argument("--dataset", type=Path, default=Path("data/processed"), help="Processed dataset directory")
     parser.add_argument("--output", type=Path, default=Path("results"), help="Output directory for checkpoints")
     parser.add_argument("--config", type=Path, default=Path("configs/config.yaml"), help="Training config YAML")

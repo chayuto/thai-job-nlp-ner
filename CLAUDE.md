@@ -37,8 +37,14 @@
 # Activate environment
 source .venv/bin/activate
 
-# Train model
-python3 scripts/train.py
+# Train model (WangchanBERTa — default)
+python3 -m src.training.train_ner --config configs/config.yaml --output results
+
+# Train model (PhayaThaiBERT)
+python3 -m src.training.train_ner --config configs/config_phayathaibert.yaml --output results
+
+# Compare models
+python3 scripts/compare_models.py results_v3 results/phayathaibert --names WangchanBERTa PhayaThaiBERT
 
 # Run inference API
 python3 -m uvicorn src.api.main:app --reload
@@ -51,7 +57,9 @@ python3 -m pytest tests/
 ```
 
 ## Key Architecture
-- Model: `wangchanberta-base-att-spm-uncased` (110M params)
+- Models: `clicknext/phayathaibert` (best, F1=0.956) / `airesearch/wangchanberta-base-att-spm-uncased` (F1=0.897)
 - Training: PyTorch MPS backend (Apple Silicon), FP32 only
+- Config-driven model selection via `configs/config*.yaml`
 - 7 entity types: PERSON, LOCATION, CONTACT, HARD_SKILL, COMPENSATION, EMPLOYMENT_TERMS, DEMOGRAPHIC
 - Labels defined in `src/alignment/token_mapper.py` (DEFAULT_LABELS, IGNORE_INDEX)
+- PhayaThaiBERT requires `freeze_embeddings: true` and `gradient_checkpointing: true` for MPS (248K vocab)

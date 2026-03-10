@@ -1,0 +1,55 @@
+model:
+  checkpoint: "clicknext/phayathaibert"
+  num_labels: 15  # O + 7 entities x 2 (B/I)
+  max_length: 512
+
+labels:
+  - "O"
+  - "B-HARD_SKILL"
+  - "I-HARD_SKILL"
+  - "B-PERSON"
+  - "I-PERSON"
+  - "B-LOCATION"
+  - "I-LOCATION"
+  - "B-COMPENSATION"
+  - "I-COMPENSATION"
+  - "B-EMPLOYMENT_TERMS"
+  - "I-EMPLOYMENT_TERMS"
+  - "B-CONTACT"
+  - "I-CONTACT"
+  - "B-DEMOGRAPHIC"
+  - "I-DEMOGRAPHIC"
+
+training:
+  learning_rate: 3.0e-5
+  batch_size: 2
+  gradient_accumulation_steps: 8
+  epochs: 15
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  fp16: false
+  bf16: false
+  eval_strategy: "epoch"
+  save_strategy: "epoch"
+  metric_for_best_model: "f1"
+  mps_high_watermark_ratio: "0.0"
+  report_to: "none"  # set to "wandb" to enable W&B logging
+  early_stopping_patience: 3
+  gradient_checkpointing: true
+  freeze_embeddings: true
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  test_size: 0.1
+  val_size: 0.1
+  seed: 42
+
+alignment:
+  fuzzy_threshold: 85.0
+  tcc_engine: "tcc"
+
+synthetic:
+  default_count: 400
+  openai_model: "gpt-4o"
+  output_file: "data/raw/synthetic.json"
